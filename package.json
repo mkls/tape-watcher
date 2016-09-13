@@ -1,0 +1,30 @@
+{
+  "name": "tape-tdd",
+  "version": "0.0.1",
+  "description": "Run tape tests after every modification",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mkls/tape-tdd.git"
+  },
+  "keywords": [
+    "tape",
+    "tdd",
+    "watch",
+    "watcher",
+    "test",
+    "reporter\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[C\u001b[C\u001b[Dtap-reporter"
+  ],
+  "author": "Mkls",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mkls/tape-tdd/issues"
+  },
+  "homepage": "https://github.com/mkls/tape-tdd#readme",
+  "dependencies": {
+    "tape": "^4.6.0"
+  }
+}
