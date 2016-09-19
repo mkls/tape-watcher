@@ -4,7 +4,8 @@
   "description": "Run tape tests after every modification",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tape tests/**/*.spec.js | tap-min",
+    "tdd": "tape-watch tests/**/*.spec.js -p tap-min"
   },
   "repository": {
     "type": "git",
@@ -26,5 +27,10 @@
   "homepage": "https://github.com/mkls/tape-tdd#readme",
   "dependencies": {
     "tape": "^4.6.0"
+  },
+  "devDependencies": {
+    "tap-min": "^1.1.0",
+    "tape": "^4.6.0",
+    "tape-watch": "^2.2.3"
   }
 }
