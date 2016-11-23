@@ -4,8 +4,8 @@
   "description": "Run tape tests after every modification",
   "main": "index.js",
   "scripts": {
-    "test": "tape tests/**/*.spec.js | tap-min",
-    "tdd": "tape-watch tests/**/*.spec.js -p tap-min"
+    "test": "tape src/**/*.spec.js | tap-min",
+    "tdd": "tape-watch src/**/*.spec.js -p tap-min"
   },
   "repository": {
     "type": "git",
@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/mkls/tape-tdd#readme",
   "dependencies": {
+    "chalk": "^1.1.3",
     "tape": "^4.6.0"
   },
   "devDependencies": {

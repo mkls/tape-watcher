@@ -1,17 +1,23 @@
 var test = require('tape');
 var path = require('path');
 
-var testFiles = ['./fixtures/simple.spec']
+// var testFiles = ['./fixtures/simple.spec']
+// var testFiles = ['./fixtures/simple.spec', './fixtures/deep-equal.spec']
+var testFiles = ['./fixtures/deep-equal.spec']
 
-test.createStream({ objectMode: true }).on('data', function (row) {
-    console.log('\ndata')
-    console.log(JSON.stringify(row))
+var harness = test.createStream({ objectMode: true }).on('data', function (row) {
+    console.log('\ndata:')
+    
+    // YES, I can do improved line number detection
+    // if (row.error) {
+    //     console.log(row.error.stack)
+    // }
+    console.log(JSON.stringify(row, null, 2))
 });
 
 testFiles.forEach(function (file) {
     require(path.resolve(file));
 });
-
 
 // var tape = require('tape')
 // var globby = require('globby')

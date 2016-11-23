@@ -26,7 +26,6 @@ test('two run triggered quickly following', function (t) {
 
     runner.setCallback(function (result, state) {
         if (callbackCount == 0) {
-            console.log(state)
             t.deepEquals(
                 state,
                 {
@@ -38,7 +37,6 @@ test('two run triggered quickly following', function (t) {
             );
             callbackCount++;
         } else if (callbackCount == 1) {
-            console.log(state)
             t.deepEquals(
                 state,
                 {
