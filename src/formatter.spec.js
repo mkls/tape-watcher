@@ -50,28 +50,34 @@ test('assertion has a non default name', function (t) {
   t.end()
 })
 
-// TODO
-// test('formats object values to be printed', function (t) {
-//   var name = 'this should do things'
-//   var assertion = {
-//     type: 'assert',
-//     operator: 'deepEqual',
-//     name: 'testing trivial stuff',
-//     file: 'some/place/over/the/rainbow',
-//     actual: 5,
-//     expected: 4
-//   }
+test('formats object values to be printed', function (t) {
+  var name = 'this should do things'
+  var assertion = {
+    type: 'assert',
+    operator: 'deepEqual',
+    name: 'testing trivial stuff',
+    file: 'some/place/over/the/rainbow',
+    actual: {a: 4},
+    expected: {a: 2, b: {a: 1}}
+  }
 
-//   var expected = `  this should do things - testing trivial stuff
-//     operator: deepEqual
-//     expected:
-//       4
-//     actual:
-//       5
-//     at:
-//       some/place/over/the/rainbow`
+  var expected = `  this should do things - testing trivial stuff
+    operator: deepEqual
+    expected:
+      {
+        "a": 2,
+        "b": {
+          "a": 1
+        }
+      }
+    actual:
+      {
+        "a": 4
+      }
+    at:
+      some/place/over/the/rainbow`
 
-//   t.deepEqual(formatter(name, assertion), expected)
-//   t.end()
-// })
+  t.deepEqual(formatter(name, assertion), expected)
+  t.end()
+})
 

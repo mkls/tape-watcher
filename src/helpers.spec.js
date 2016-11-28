@@ -5,19 +5,19 @@ var helpers = require('./helpers')
 test('formatValue', t => {
   t.equal(
     helpers.formatValue(true),
-    '    true',
+    '      true',
     'boolean value'
   )
 
   t.equal(
     helpers.formatValue('taap'),
-    '    taap',
+    '      taap',
     'string value'
   )
 
   t.equal(
     helpers.formatValue(34),
-    '    34',
+    '      34',
     'number value'
   )
 
@@ -27,15 +27,15 @@ test('formatValue', t => {
       b: 'hap', 
       c: [1, 2]
     }),
-`    {
-      "a": 34,
-      "b": "hap",
-      "c": [
-        1,
-        2
-      ]
-    }`,
-    'number value'
+`      {
+        "a": 34,
+        "b": "hap",
+        "c": [
+          1,
+          2
+        ]
+      }`,
+    'object value'
   )
 
   t.end()

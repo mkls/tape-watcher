@@ -3,7 +3,7 @@ module.exports = {
 }
 
 function formatValue(value) {
-  const padding = '    '
+  const padding = '      '
 
   if (['boolean', 'number', 'string'].indexOf(typeof value) > -1) {
     return padding + value

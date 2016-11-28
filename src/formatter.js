@@ -1,3 +1,6 @@
+var helpers = require('./helpers')
+var format = helpers.formatValue
+
 var defaultAssertionNames = {
     deepEqual: 'should be equivalent'
 }
@@ -10,9 +13,9 @@ module.exports = function (name, assert) {
     return `  ${name}
     operator: ${assert.operator}
     expected:
-      ${assert.expected}
+${format(assert.expected)}
     actual:
-      ${assert.actual}
+${format(assert.actual)}
     at:
       ${assert.file}`
 }
