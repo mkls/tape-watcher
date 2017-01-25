@@ -17,7 +17,8 @@
     "watch",
     "watcher",
     "test",
-    "reporter\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[C\u001b[C\u001b[Dtap-reporter"
+    "reporter",
+    "tap-reporter"
   ],
   "author": "Mkls",
   "license": "MIT",
