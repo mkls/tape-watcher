@@ -1,143 +1,159 @@
-var path = require('path');
-var globby = require('globby');
-var chokidar = require('chokidar');
-var chalk = require('chalk');
-var prettyms = require('pretty-ms');
-var hirestime = require('hirestime');
+var path = require('path')
+var globby = require('globby')
+var chokidar = require('chokidar')
+var chalk = require('chalk')
+var prettyms = require('pretty-ms')
+var hirestime = require('hirestime')
+var inspect = require('object-inspect')
 
-var difflet = require('difflet')({ indent : 2 });
+var failurePrinter = require('./src/failure-printer')
 
-var watchGlob = '.';
-var testFilesGlob = './**/*.spec.js';
-var watchdogTimeout = 3000;
-
-console.log(chalk.gray('Starting up, first run might be slow... '));
+const settings = {
+    watchGlob: '.',
+    testFilesGlob: '**/*.spec.js',
+    watchdogTimeout: 3000
+}
+// const settings = {
+//     watchGlob: 'src/**',
+//     testFilesGlob: 'src/**/f*.spec.js',
+//     watchdogTimeout: 3000
+// }
 
 var state = {
     running: false,
     reRunAfterFinish: false,
     reReadTestFiles: false
-};
-var testFiles = globby.sync(testFilesGlob);
+}
 
-var watcher = chokidar.watch(watchGlob, {
+var runNumber = 0
+
+console.log(chalk.gray('\n  Starting up... '))
+var testFiles = globby.sync(settings.testFilesGlob)
+
+var watcher = chokidar.watch(settings.watchGlob, {
     ignored: /[\/\\]\.|node_modules/,
     persistent: true,
     ignoreInitial: true
-});
+})
 
-watcher.on('change', runTests);
-watcher.on('add', readAndRunTests);
-watcher.on('unlink', readAndRunTests);
+watcher.on('change', runTests)
+watcher.on('add', readAndRunTests)
+watcher.on('unlink', readAndRunTests)
 
-readAndRunTests();
+readAndRunTests()
 
 function readAndRunTests() {
-    testFiles = globby.sync(testFilesGlob);
-    runTests();
+    testFiles = globby.sync(settings.testFilesGlob)
+    runTests()
 }
 
 function runTests() {
     if (state.running) {
-        state.reRunAfterFinish = true;
-        return;
+        state.reRunAfterFinish = true
+        return
     }
-    state.running = true;
+    state.running = true
 
-    var timer = hirestime();
-    console.log(chalk.gray('\n  New run triggered.'));
+    var timer = hirestime()
+
+    runNumber += 1
+    var time = new Date().toString().slice(16, 24)
+    console.log(chalk.gray('\n  New run triggered... (#' + runNumber + ', ' + time + ')'))
 
     var stats = {
         success: 0,
         failure: 0,
         timer: hirestime()
-    };
+    }
 
-    clearRequireCash();
-    var tape = require('tape');
-
+    clearRequireCash()
+    // eslint-disable-next-line global-require
+    var tape = require('tape')
 
     var watchdogTimeoutId = setTimeout(function () {
-        console.log(chalk.yellow('  Watchdog: test timed out after ' + prettyms(watchdogTimeout)));
-        cleanUp(tape);
-    }, watchdogTimeout);
+        console.log(chalk.yellow('  Watchdog: test timed out after ' + prettyms(settings.watchdogTimeout)))
+        cleanUp(tape)
+    }, settings.watchdogTimeout)
 
     tape
         .createStream({ objectMode: true })
         .on('data', function (row) {
             if (row.type === 'assert') {
                 if (row.ok) {
-                    stats.success += 1;
+                    stats.success += 1
                 } else {
-                    stats.failure += 1;
+                    stats.failure += 1
 
                     var failureReport = {
-                        at: getRelativePath(__dirname, row.file),
+                        name: row.name,
                         operator: row.operator,
-                        // actual: row.actual,
-                        // expected: row.expected
-                        diff: difflet.compare(row.actual, row.expected)
-                    };
-                    console.log(chalk.red('\n  Failure: '));
-                    console.log('    at:       ' + failureReport.at);
-                    console.log('    operator: ' + failureReport.operator);
-                    console.log('    diff:     ');
-                    var padded = failureReport.diff.split('\n')
-                        .map(function (row) {
-                            return '    ' + row;
-                        })
-                        .join('\n');
+                        expected: inspect(row.expected),
+                        actual: inspect(row.actual),
+                        at: getRelativePath(__dirname, row.file)
+                    }
 
-                    console.log(padded);
-                    // console.log(JSON.stringify(failureReport, null, 4));
+                    var formatted = failurePrinter(failureReport)
+
+                    var padded = formatted.split('\n')
+                        .map(function (row) {
+                            return '  ' + row
+                        })
+                        .join('\n')
+                    console.log(chalk.gray('\n' + padded))
+
+                    // https://www.npmjs.com/package/ansidiff
                 }
             }
         })
         .on('end', function () {
-            printEndStats(stats);
-            clearTimeout(watchdogTimeoutId);
-            cleanUp(tape);
-        });
+            printEndStats(stats)
+            clearTimeout(watchdogTimeoutId)
+            cleanUp(tape)
+        })
 
     testFiles.forEach(function (file) {
-        require(path.resolve(file));
-    });
+        // eslint-disable-next-line global-require
+        require(path.resolve(file))
+    })
 }
 
 function cleanUp(tape) {
+
     // cleaning some stuff up, so we don't get memory leak warning
-    var harness = tape.getHarness();
-    harness._results.removeAllListeners();
-    harness._tests = [];
+    var harness = tape.getHarness()
+    harness._results.removeAllListeners()
+    harness._tests = []
 
-    process.removeAllListeners('exit');
+    process.removeAllListeners('exit')
 
-    state.running = false;
+    state.running = false
     if (state.reRunAfterFinish) {
-        state.reRunAfterFinish = false;
+        state.reRunAfterFinish = false
+
         // runTests(); // this might be not that important
     }
 }
 
 process.on('uncaughtException', function (err) {
-    console.log(chalk.red('Uncaught exception: \n', err.stack || err.message || err));
-});
+    console.log(chalk.red('Uncaught exception: \n', err.stack || err.message || err))
+})
 
+process.on('warning', e => console.warn(e.stack))
 
 /**
  * Prints end message
  */
 function printEndStats(stats) {
-    var time = prettyms(stats.timer());
+    var time = prettyms(stats.timer())
 
-    console.log('');
+    console.log('')
     if (!stats.failure) {
-        var successMessage = '  Run ' + stats.success + ' tests successfully in ' + time;
-        console.log(chalk.green(successMessage));
+        var successMessage = '  Run ' + stats.success + ' tests successfully in ' + time
+        console.log(chalk.green(successMessage))
     } else {
         var failureMessage = '  ' + stats.failure + ' tests failed, ' + stats.success +
-            ' successfull in ' + time;
-        console.log(chalk.red(failureMessage));
+            ' successfull in ' + time
+        console.log(chalk.red(failureMessage))
     }
 }
 
@@ -145,8 +161,8 @@ function printEndStats(stats) {
  * Gets the relative path from full path returned in row data
  */
 function getRelativePath(basePath, path) {
-    var startIndex = path.indexOf(basePath) + basePath.length + 1;
-    return path.slice(startIndex);
+    var startIndex = path.indexOf(basePath) + basePath.length + 1
+    return path.slice(startIndex)
 }
 
 /*
@@ -158,9 +174,9 @@ function clearRequireCash() {
         .forEach(function (fileName) {
             if (fileName.indexOf('node_modules') === -1 ||
                 fileName.indexOf(path.join('node_modules', 'tape')) > -1) {
-                delete require.cache[fileName];
+                delete require.cache[fileName]
             }
-        });
+        })
 }
 
 /**
