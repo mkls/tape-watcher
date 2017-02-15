@@ -10,14 +10,9 @@ var failurePrinter = require('./src/failure-printer')
 
 const settings = {
     watchGlob: '.',
-    testFilesGlob: '**/*.spec.js',
-    watchdogTimeout: 3000
+    testFilesGlob: 'src/*.spec.js',
+    watchdogTimeout: 1000
 }
-// const settings = {
-//     watchGlob: 'src/**',
-//     testFilesGlob: 'src/**/f*.spec.js',
-//     watchdogTimeout: 3000
-// }
 
 var state = {
     running: false,
@@ -26,6 +21,10 @@ var state = {
 }
 
 var runNumber = 0
+
+process.on('uncaughtException', function (err) {
+    console.log(chalk.red('Uncaught exception: \n', err.stack || err.message || err))
+})
 
 console.log(chalk.gray('\n  Starting up... '))
 var testFiles = globby.sync(settings.testFilesGlob)
@@ -134,12 +133,6 @@ function cleanUp(tape) {
     }
 }
 
-process.on('uncaughtException', function (err) {
-    console.log(chalk.red('Uncaught exception: \n', err.stack || err.message || err))
-})
-
-process.on('warning', e => console.warn(e.stack))
-
 /**
  * Prints end message
  */
@@ -174,6 +167,7 @@ function clearRequireCash() {
         .forEach(function (fileName) {
             if (fileName.indexOf('node_modules') === -1 ||
                 fileName.indexOf(path.join('node_modules', 'tape')) > -1) {
+
                 delete require.cache[fileName]
             }
         })

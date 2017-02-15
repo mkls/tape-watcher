@@ -6,8 +6,7 @@ test('gets the line from the file where the failing assertion is', function (t) 
     var stack = `Error: should be equal
         at Test.assert [as _assert] (C:\Workings\tape-tdd\node_modules\tape\lib\test.js:217:54)
         at Test.bound [as _assert] (C:\Workings\tape-tdd\node_modules\tape\lib\test.js:66:32)
-        at Test.equal.Test.equals.Test.isEqual.Test.is.Test.strictEqual.Test.strictEquals (C:\Working
-    s\tape-tdd\node_modules\tape\lib\test.js:352:10)
+        at Test.equal.Test.equals.Test.isEqual.Test.is.Test.strictEqual.Test.strictEquals (C:\Workings\tape-tdd\node_modules\tape\lib\test.js:352:10)
         at Test.bound [as equal] (C:\Workings\tape-tdd\node_modules\tape\lib\test.js:66:32)
         at Test.<anonymous> (C:\Workings\tape-tdd\src\get-failure-location.spec.js:6:7)
         at Test.bound [as _cb] (C:\Workings\tape-tdd\node_modules\tape\lib\test.js:66:32)
