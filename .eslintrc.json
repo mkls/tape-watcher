@@ -59,7 +59,7 @@
         // stylistic rules
         "max-len": ["warn", 120],
         "operator-linebreak": ["warn", "after"],
-        "line-comment-position": "warn",
+        // "line-comment-position": "warn",
         "lines-around-comment": ["warn"],
         "one-var-declaration-per-line": "warn",
         "one-var": ["warn", "never"],

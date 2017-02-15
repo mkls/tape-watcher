@@ -14,13 +14,28 @@ const settings = {
     watchdogTimeout: 1000
 }
 
-var state = {
+const state = {
     running: false,
     reRunAfterFinish: false,
-    reReadTestFiles: false
+    reReadTestFiles: false,
+    runNumber: 0
 }
 
-var runNumber = 0
+function getArt() {
+    var arts = [
+        '><((((\'>',    // fish
+        '~~(__^·>',     // mouse
+        '__̴ı̴̴̡̡̡ı̴̴̡ ̡̡͡|̲̲̲͡͡͡ ̲▫̲͡ ̲̲̲͡͡π̲̲͡͡ ̲̲͡▫̲̲͡͡ ̲|̡̡̡.___',
+        '♫♪.♫♪',
+        'd[ o_0 ]b',
+        "|'L'|",
+        '(_8^(J)',
+        '\\(^-^)/'
+    ]
+
+    var index = Math.floor(Math.random() * arts.length)
+    return chalk.magenta.dim(arts[index])
+}
 
 process.on('uncaughtException', function (err) {
     console.log(chalk.red('Uncaught exception: \n', err.stack || err.message || err))
@@ -30,7 +45,7 @@ console.log(chalk.gray('\n  Starting up... '))
 var testFiles = globby.sync(settings.testFilesGlob)
 
 var watcher = chokidar.watch(settings.watchGlob, {
-    ignored: /[\/\\]\.|node_modules/,
+    ignored: /[\/\\]\.|node_modules|.git/,
     persistent: true,
     ignoreInitial: true
 })
@@ -48,16 +63,17 @@ function readAndRunTests() {
 
 function runTests() {
     if (state.running) {
-        state.reRunAfterFinish = true
         return
     }
     state.running = true
 
-    var timer = hirestime()
+    // cleaning up console
+    process.stdout.write('\033c')
 
-    runNumber += 1
+    state.runNumber += 1
     var time = new Date().toString().slice(16, 24)
-    console.log(chalk.gray('\n  New run triggered... (#' + runNumber + ', ' + time + ')'))
+    console.log(chalk.gray('\n  Run #' + state.runNumber + ', triggered at ' + time +
+        '  ' + getArt()))
 
     var stats = {
         success: 0,

@@ -23,7 +23,7 @@ module.exports = function (input) {
  * If no assertion name is set, tape sets a default one.
  * I find it irrelevant, so I'd rather just have undefined in this cases
  */
-var defaultAssertionNames = {
+var defaultAssertionNamesForOperators = {
     'ok': 'should be truthy',
     'notOk': 'should be falsy',
     'equal': 'should be equal',
@@ -32,19 +32,17 @@ var defaultAssertionNames = {
     'deepLooseEqual': 'should be equivalent',
     'notDeepEqual': 'should not be equivalent',
     'notDeepLooseEqual': 'should be equivalent',
-    'throws': 'should throw',
-    // 'throws': 'should not throw' // this is a strange operator name for doesNotThrow
+    'throws': ['should throw', 'should not throw']
 }
 
 /**
  * I would like to map the object stream to a stream of object like this for each assert
  */
 var expectedMappedAssertion = {
-    names: ['A', 'B'],
-    assertionName: 'asdf' || undefined,
+    names: ['A', 'B', 'assertion name if not default'],
     at: 'new at detection with relative path',
     actual: {},
     expected: {},
     operator: 'deepEqual',
-    ok: true
+    ok: false
 }
