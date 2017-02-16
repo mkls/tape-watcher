@@ -11,7 +11,8 @@ var failurePrinter = require('./src/failure-printer')
 const settings = {
     watchGlob: '.',
     testFilesGlob: 'src/*.spec.js',
-    watchdogTimeout: 1000
+    watchdogTimeout: 1000,
+    clearConsole: false
 }
 
 const state = {
@@ -25,7 +26,6 @@ function getArt() {
     var arts = [
         '><((((\'>',    // fish
         '~~(__^·>',     // mouse
-        '__̴ı̴̴̡̡̡ı̴̴̡ ̡̡͡|̲̲̲͡͡͡ ̲▫̲͡ ̲̲̲͡͡π̲̲͡͡ ̲̲͡▫̲̲͡͡ ̲|̡̡̡.___',
         '♫♪.♫♪',
         'd[ o_0 ]b',
         "|'L'|",
@@ -68,7 +68,9 @@ function runTests() {
     state.running = true
 
     // cleaning up console
-    process.stdout.write('\033c')
+    if (settings.clearConsole) {
+        process.stdout.write('\033c')
+    }
 
     state.runNumber += 1
     var time = new Date().toString().slice(16, 24)

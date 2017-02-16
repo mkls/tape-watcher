@@ -1,4 +1,33 @@
-module.exports = function (input) {
+var failureLocation = require('./get-failure-location')
+
+module.exports = {
+    nonDefaultAssertionName,
+    handleStream,
+    assertMapper
+}
+
+function assertMapper(state, assertion) {
+    var assertionName = nonDefaultAssertionName(assertion.name, assertion.operator)
+    var testNames = state.testNames[assertion.test]
+    var names = assertionName ? testNames.concat(assertionName) : testNames
+
+    var at = failureLocation(state.dirname, assertion.error.stack)
+
+    return {
+        testNames: state.testNames,
+        dirname: state.dirname,
+        lastAssertion: {
+            ok: assertion.ok,
+            names,
+            operator: assertion.operator,
+            actual: assertion.actual,
+            expected: assertion.expected,
+            at
+        }
+    }
+}
+
+function handleStream(input) {
     return input.reduce(function (accu, item) {
         if (item.type === 'test') {
             if (typeof item.parent === 'number') {
@@ -7,9 +36,11 @@ module.exports = function (input) {
                 accu.testNames[item.id] = [item.name]
             }
         } else if (item.type === 'assert') {
+            var testNames = accu.testNames[item.test]
+            var assertionName = nonDefaultAssertionName(item.name, item.operator)
+
             accu.mappedAsserts.push({
-                names: accu.testNames[item.test],
-                assertionName: item.name
+                names: assertionName ? testNames.concat(assertionName) : testNames
             })
         }
         return accu
@@ -23,26 +54,29 @@ module.exports = function (input) {
  * If no assertion name is set, tape sets a default one.
  * I find it irrelevant, so I'd rather just have undefined in this cases
  */
-var defaultAssertionNamesForOperators = {
-    'ok': 'should be truthy',
-    'notOk': 'should be falsy',
-    'equal': 'should be equal',
-    'notEqual': 'should not be equal',
-    'deepEqual': 'should be equivalent',
-    'deepLooseEqual': 'should be equivalent',
-    'notDeepEqual': 'should not be equivalent',
-    'notDeepLooseEqual': 'should be equivalent',
-    'throws': ['should throw', 'should not throw']
+function nonDefaultAssertionName(assertionName, operator) {
+    var defaultNames = {
+        'ok': ['should be truthy'],
+        'notOk': ['should be falsy'],
+        'equal': ['should be equal'],
+        'notEqual': ['should not be equal'],
+        'deepEqual': ['should be equivalent'],
+        'deepLooseEqual': ['should be equivalent'],
+        'notDeepEqual': ['should not be equivalent'],
+        'notDeepLooseEqual': ['should be equivalent'],
+        'throws': ['should throw', 'should not throw']
+    }
+
+    var matchingName = defaultNames[operator]
+
+    if (matchingName && matchingName.indexOf(assertionName) > -1) {
+        return undefined
+    } else {
+        return assertionName
+    }
 }
 
 /**
  * I would like to map the object stream to a stream of object like this for each assert
  */
-var expectedMappedAssertion = {
-    names: ['A', 'B', 'assertion name if not default'],
-    at: 'new at detection with relative path',
-    actual: {},
-    expected: {},
-    operator: 'deepEqual',
-    ok: false
-}
+
