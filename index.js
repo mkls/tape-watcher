@@ -12,7 +12,7 @@ const streamMapper = require('./src/stream-mapper')
 
 const settings = {
     watchGlob: '.',
-    testFilesGlob: 'fixtures/just*.spec.js',
+    testFilesGlob: 'manua*/deep-eq*.spec.js',
     watchdogTimeout: 300,
     clearConsole: true
 }
