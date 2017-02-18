@@ -6,10 +6,6 @@ const hirestime = require('hirestime')
 const printer = require('./src/printer')
 const streamMapper = require('./src/stream-mapper')
 
-/**
- * https://www.npmjs.com/package/ansidiff used as diff in tap-diff
- */
-
 const settings = {
     watchGlob: '.',
     testFilesGlob: 'manua*/deep-eq*.spec.js',
@@ -23,13 +19,6 @@ const state = {
     shouldGetTestFiles: true,
     runNumber: 0,
     runState: null
-}
-
-function logState(where) {
-    if (where) {
-        console.log(where)
-    }
-    console.log(JSON.stringify(state, null, 4))
 }
 
 process.on('uncaughtException', error => {

@@ -1,6 +1,7 @@
 const chalk = require('chalk')
 const prettyms = require('pretty-ms')
 const inspect = require('object-inspect')
+const diff = require('diff')
 
 const addPadding = padding => string => {
     return string
@@ -10,8 +11,10 @@ const addPadding = padding => string => {
 }
 
 const colorLog = color => text => {
+    const value = '\n' + addPadding('  ')(text)
+
     // eslint-disable-next-line no-console
-    console.log(chalk[color]('\n' + addPadding('  ')(text)))
+    console.log(color ? chalk[color](value) : value)
 }
 const red = colorLog('red')
 const green = colorLog('green')
@@ -28,18 +31,38 @@ const encodeValue = value => {
     }
 }
 
+const coloredDiff = (actual, expected) => {
+    return diff.diffWords(
+        encodeValue(expected),
+        encodeValue(actual)
+    ).map(item => {
+        if (item.added) {
+            return chalk.green(item.value)
+        } else if (item.removed) {
+            return chalk.red(item.value)
+        } else {
+            return chalk.gray(item.value)
+        }
+    }).join('')
+}
+
 const failure = item => {
-    const output = `${item.name.join(' - ')}
+    const output = chalk.gray(`${item.name.join(' - ')}
   ---
     operator: ${item.operator}
     expected:
 ${encodeValue(item.expected)}
     actual:
 ${encodeValue(item.actual)}
-    at: ${item.at}
-  ...`
+    diff:
+`) +
 
-    gray(output)
+    coloredDiff(item.actual, item.expected) + '\n' +
+
+    chalk.gray(`    at: ${item.at}
+  ...`)
+
+    colorLog()(output)
 }
 
 const exception = (error, runState) => {
