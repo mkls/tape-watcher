@@ -1,15 +1,14 @@
 {
-  "name": "tape-tdd",
+  "name": "tape-watcher",
   "version": "0.0.1",
   "description": "Run tape tests after every modification and print a pretty output",
   "main": "index.js",
   "scripts": {
-    "test": "tape **/*.spec.js | tap-min",
-    "tdd": "tape-watch src/**/*.spec.js -p tap-min"
+    "test": "tape **/*.spec.js | tap-min"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mkls/tape-tdd.git"
+    "url": "git+https://github.com/mkls/tape-watcher.git"
   },
   "keywords": [
     "tape",
@@ -23,9 +22,9 @@
   "author": "Mkls",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mkls/tape-tdd/issues"
+    "url": "https://github.com/mkls/tape-watcher/issues"
   },
-  "homepage": "https://github.com/mkls/tape-tdd#readme",
+  "homepage": "https://github.com/mkls/tape-watcher#readme",
   "dependencies": {
     "chalk": "^1.1.3",
     "chokidar": "^1.6.1",
@@ -38,7 +37,6 @@
   "devDependencies": {
     "eslint": "^3.14.1",
     "tap-min": "^1.1.0",
-    "tape": "^4.6.0",
-    "tape-watch": "^2.2.4"
+    "tape": "^4.6.0"
   }
 }
