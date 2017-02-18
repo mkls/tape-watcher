@@ -4,7 +4,8 @@
   "description": "Run tape tests after every modification and print a pretty output",
   "main": "index.js",
   "scripts": {
-    "test": "tape **/*.spec.js | tap-min"
+    "test": "tape src/*.spec.js | tap-min",
+    "eslint": "eslint --fix ./src/"
   },
   "repository": {
     "type": "git",

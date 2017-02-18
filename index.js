@@ -1,179 +1,152 @@
-var path = require('path')
-var globby = require('globby')
-var chokidar = require('chokidar')
-var chalk = require('chalk')
-var prettyms = require('pretty-ms')
-var hirestime = require('hirestime')
-var inspect = require('object-inspect')
+const path = require('path')
+const globby = require('globby')
+const chokidar = require('chokidar')
+const hirestime = require('hirestime')
 
-var failurePrinter = require('./src/failure-printer')
+const printer = require('./src/printer')
+const streamMapper = require('./src/stream-mapper')
+
+/**
+ * https://www.npmjs.com/package/ansidiff used as diff in tap-diff
+ */
 
 const settings = {
     watchGlob: '.',
-    testFilesGlob: 'src/*.spec.js',
-    watchdogTimeout: 1000,
-    clearConsole: false
+    testFilesGlob: 'fixtures/just*.spec.js',
+    watchdogTimeout: 300,
+    clearConsole: true
 }
 
 const state = {
     running: false,
-    reRunAfterFinish: false,
-    reReadTestFiles: false,
-    runNumber: 0
+    testFiles: [],
+    shouldGetTestFiles: true,
+    runNumber: 0,
+    runState: null
 }
 
-function getArt() {
-    var arts = [
-        '><((((\'>',    // fish
-        '~~(__^·>',     // mouse
-        '♫♪.♫♪',
-        'd[ o_0 ]b',
-        "|'L'|",
-        '(_8^(J)',
-        '\\(^-^)/'
-    ]
-
-    var index = Math.floor(Math.random() * arts.length)
-    return chalk.magenta.dim(arts[index])
+function logState(where) {
+    if (where) {
+        console.log(where)
+    }
+    console.log(JSON.stringify(state, null, 4))
 }
 
-process.on('uncaughtException', function (err) {
-    console.log(chalk.red('Uncaught exception: \n', err.stack || err.message || err))
+process.on('uncaughtException', error => {
+    printer.exception(error, state.runState)
+    cleanUp()
 })
 
-console.log(chalk.gray('\n  Starting up... '))
-var testFiles = globby.sync(settings.testFilesGlob)
+const watcher = chokidar.watch(
+    settings.watchGlob,
+    {
+        ignored: /[\/\\]\.|node_modules|.git/,
+        persistent: true,
+        ignoreInitial: true
+    }
+)
 
-var watcher = chokidar.watch(settings.watchGlob, {
-    ignored: /[\/\\]\.|node_modules|.git/,
-    persistent: true,
-    ignoreInitial: true
-})
+watcher
+    .on('change', path => runTests(`${path} changed`))
+    .on('add', path => {
+        state.shouldGetTestFiles = true
+        runTests(`${path} added`)
+    })
+    .on('unlink', path => {
+        state.shouldGetTestFiles = true
+        runTests(`${path} removed`)
+    })
 
-watcher.on('change', runTests)
-watcher.on('add', readAndRunTests)
-watcher.on('unlink', readAndRunTests)
+runTests('Initial run')
 
-readAndRunTests()
 
-function readAndRunTests() {
-    testFiles = globby.sync(settings.testFilesGlob)
-    runTests()
-}
-
-function runTests() {
+function runTests(triggerReason) {
     if (state.running) {
         return
     }
     state.running = true
-
-    // cleaning up console
-    if (settings.clearConsole) {
-        process.stdout.write('\033c')
-    }
-
     state.runNumber += 1
-    var time = new Date().toString().slice(16, 24)
-    console.log(chalk.gray('\n  Run #' + state.runNumber + ', triggered at ' + time +
-        '  ' + getArt()))
 
-    var stats = {
-        success: 0,
-        failure: 0,
-        timer: hirestime()
+    if (state.shouldGetTestFiles) {
+        state.testFiles = globby.sync(settings.testFilesGlob)
+        state.shouldGetTestFiles = false
     }
+
+    printer.runStart(state.runNumber, triggerReason, settings.clearConsole)
 
     clearRequireCash()
-    // eslint-disable-next-line global-require
-    var tape = require('tape')
 
-    var watchdogTimeoutId = setTimeout(function () {
-        console.log(chalk.yellow('  Watchdog: test timed out after ' + prettyms(settings.watchdogTimeout)))
-        cleanUp(tape)
-    }, settings.watchdogTimeout)
+    const runState = {
+        success: 0,
+        failure: 0,
+        timer: hirestime(),
+        testNames: {
+            lastTest: ['parsing test files']
+        },
+        watchdogTimeoutId: null,
+        // eslint-disable-next-line global-require
+        tape: require('tape')
+    }
+    state.runState = runState
 
-    tape
+    runState.tape
         .createStream({ objectMode: true })
-        .on('data', function (row) {
+        .on('data', (row) => {
+            if (row.type === 'test') {
+                runState.testNames = streamMapper.testNameMapper(row, runState.testNames)
+
+                setUpTestWatchdog(runState)
+            }
             if (row.type === 'assert') {
                 if (row.ok) {
-                    stats.success += 1
+                    runState.success += 1
                 } else {
-                    stats.failure += 1
+                    runState.failure += 1
 
-                    var failureReport = {
-                        name: row.name,
-                        operator: row.operator,
-                        expected: inspect(row.expected),
-                        actual: inspect(row.actual),
-                        at: getRelativePath(__dirname, row.file)
-                    }
-
-                    var formatted = failurePrinter(failureReport)
-
-                    var padded = formatted.split('\n')
-                        .map(function (row) {
-                            return '  ' + row
-                        })
-                        .join('\n')
-                    console.log(chalk.gray('\n' + padded))
-
-                    // https://www.npmjs.com/package/ansidiff
+                    const assert = streamMapper.assertMapper(__dirname, runState.testNames, row)
+                    printer.failure(assert)
                 }
             }
         })
-        .on('end', function () {
-            printEndStats(stats)
-            clearTimeout(watchdogTimeoutId)
-            cleanUp(tape)
+        .on('end', () => {
+            printer.runEnd(runState.success, runState.failure, runState.timer())
+            cleanUp()
         })
 
-    testFiles.forEach(function (file) {
-        // eslint-disable-next-line global-require
-        require(path.resolve(file))
-    })
+    // eslint-disable-next-line global-require
+    state.testFiles.forEach(file => require(path.resolve(file)))
 }
 
-function cleanUp(tape) {
+function setUpTestWatchdog(runState) {
+    if (runState.watchdogTimeoutId) {
+        clearTimeout(runState.watchdogTimeoutId)
+    }
+    runState.watchdogTimeoutId = setTimeout(
+        () => {
+            printer.timedOut(runState.testNames.lastTest, settings.watchdogTimeout)
+            cleanUp()
+        },
+        settings.watchdogTimeout
+    )
+}
 
-    // cleaning some stuff up, so we don't get memory leak warning
-    var harness = tape.getHarness()
-    harness._results.removeAllListeners()
-    harness._tests = []
+function cleanUp() {
+    if (state.runState) {
+        const runState = state.runState
+
+        const harness = runState.tape.getHarness()
+        harness._results.removeAllListeners()
+        harness._tests = []
+
+        if (runState.watchdogTimeoutId) {
+            clearTimeout(runState.watchdogTimeoutId)
+        }
+
+        state.runState = null
+    }
 
     process.removeAllListeners('exit')
-
     state.running = false
-    if (state.reRunAfterFinish) {
-        state.reRunAfterFinish = false
-
-        // runTests(); // this might be not that important
-    }
-}
-
-/**
- * Prints end message
- */
-function printEndStats(stats) {
-    var time = prettyms(stats.timer())
-
-    console.log('')
-    if (!stats.failure) {
-        var successMessage = '  Run ' + stats.success + ' tests successfully in ' + time
-        console.log(chalk.green(successMessage))
-    } else {
-        var failureMessage = '  ' + stats.failure + ' tests failed, ' + stats.success +
-            ' successfull in ' + time
-        console.log(chalk.red(failureMessage))
-    }
-}
-
-/**
- * Gets the relative path from full path returned in row data
- */
-function getRelativePath(basePath, path) {
-    var startIndex = path.indexOf(basePath) + basePath.length + 1
-    return path.slice(startIndex)
 }
 
 /*
@@ -190,23 +163,6 @@ function clearRequireCash() {
             }
         })
 }
-
-/**
- * Partial staff for later and for debugging
- */
-
-// in case we want to write datastream to file
-// .on('end', function () {
-//     console.log('eNDDUOLO', dataStream);
-
-//     var fs = require('fs');
-//     fs.writeFileSync('./src/tdd/deep-nest.json', JSON.stringify(dataStream, null, 4));
-// });
-
-// YES, I can do improved line number detection
-// if (row.error) {
-//     console.log(row.error.stack)
-// }
 
 // for debugging many runs after each other
 // for (var i = 0; i < 1; i += 1) {

@@ -9,7 +9,7 @@
     // for detailed explanation of each rule see: http://eslint.org/docs/rules/<rule-name>
     "rules": {
         // jslint rules translated
-        "func-style": ["warn", "declaration"],
+        "func-style": ["warn", "declaration", { "allowArrowFunctions": true }],
         "no-bitwise": "warn",
         "curly": "warn",
         "eqeqeq": ["warn", "always", {"null": "ignore"}],
