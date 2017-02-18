@@ -1,6 +1,6 @@
 var test = require('tape')
 
-var streamConv = require('./stream-to-asserts')
+var streamConv = require('./stream-mapper')
 
 test('assertMapper', t => {
     var input = {

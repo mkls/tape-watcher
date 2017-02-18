@@ -59,7 +59,6 @@
         // stylistic rules
         "max-len": ["warn", 120],
         "operator-linebreak": ["warn", "after"],
-        // "line-comment-position": "warn",
         "lines-around-comment": ["warn"],
         "one-var-declaration-per-line": "warn",
         "one-var": ["warn", "never"],
@@ -82,14 +81,11 @@
         "no-implied-eval": "warn",
         "no-new-func": "warn",
 
-        // some rules from sonarcube
         "strict": ["warn", "never"],
         "func-names": ["warn", "never"],
-        "max-statements": ["warn", 12], // in sonarcube it's actually the max lines for a function instead (100 lines), but this is close
-        "max-lines": ["warn", 200],     // also trying to mimic the same sonarcube rule
+        "max-statements": ["warn", 12],
+        "max-lines": ["warn", 200],
         "default-case": "warn",
-
-        "global-require": "warn",   // see http://justbuildsomething.com/node-js-best-practices/#2
         "no-multi-spaces": "warn",
         "dot-location": ["warn", "property"],
 

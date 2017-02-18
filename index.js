@@ -8,14 +8,15 @@ const streamMapper = require('./src/stream-mapper')
 
 const settings = {
     watchGlob: '.',
-    testFilesGlob: 'manua*/deep-eq*.spec.js',
+    // testFilesGlob: 'manua*/deep-eq*.spec.js',
+    testFilesGlob: 'src/*.spec.js',
     watchdogTimeout: 300,
     clearConsole: true
 }
 
 const state = {
     running: false,
-    testFiles: [],
+    testFileNames: [],
     shouldGetTestFiles: true,
     runNumber: 0,
     runState: null
@@ -48,7 +49,6 @@ watcher
 
 runTests('Initial run')
 
-
 function runTests(triggerReason) {
     if (state.running) {
         return
@@ -56,16 +56,9 @@ function runTests(triggerReason) {
     state.running = true
     state.runNumber += 1
 
-    if (state.shouldGetTestFiles) {
-        state.testFiles = globby.sync(settings.testFilesGlob)
-        state.shouldGetTestFiles = false
-    }
-
-    printer.runStart(state.runNumber, triggerReason, settings.clearConsole)
-
     clearRequireCash()
 
-    const runState = {
+    const runState = state.runState = {
         success: 0,
         failure: 0,
         timer: hirestime(),
@@ -73,10 +66,15 @@ function runTests(triggerReason) {
             lastTest: ['parsing test files']
         },
         watchdogTimeoutId: null,
-        // eslint-disable-next-line global-require
         tape: require('tape')
     }
-    state.runState = runState
+
+    if (state.shouldGetTestFiles) {
+        state.testFileNames = globby.sync(settings.testFilesGlob)
+        state.shouldGetTestFiles = false
+    }
+
+    printer.runStart(state.runNumber, triggerReason, settings.clearConsole)
 
     runState.tape
         .createStream({ objectMode: true })
@@ -102,8 +100,7 @@ function runTests(triggerReason) {
             cleanUp()
         })
 
-    // eslint-disable-next-line global-require
-    state.testFiles.forEach(file => require(path.resolve(file)))
+    state.testFileNames.forEach(file => require(path.resolve(file)))
 }
 
 function setUpTestWatchdog(runState) {
