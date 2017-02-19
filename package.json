@@ -17,6 +17,7 @@
   },
   "keywords": [
     "tape",
+    "tap",
     "tdd",
     "watch",
     "watcher",
