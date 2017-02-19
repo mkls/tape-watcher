@@ -1,35 +1,52 @@
 const path = require('path')
 const globby = require('globby')
 const hirestime = require('hirestime')
+const printerFactory = require('./printer')
 
-const printer = require('./printer')
+const logger = {
+    log(value) {
+        // eslint-disable-next-line no-console
+        console.log(value)
+    }
+}
+
 const streamMapper = require('./stream-mapper')
 
 const state = {
+    options: {},
     running: false,
     testFileNames: [],
     testFileNamesValid: false,
     runNumber: 0,
-    runState: null
+    runState: null,
+    printer: null
 }
 
-module.exports = (settings) => {
-    state.settings = settings
+module.exports = (options) => {
+    state.options = options
+    state.printer = printerFactory(logger, options)
 
     return {
         runTests,
-        unvalidateFileList
+        unvalidateFileList() {
+            state.testFileNamesValid = false
+        },
+        toggleDiffView() {
+            state.options.diffView = !state.options.diffView
+            state.printer = printerFactory(logger, state.options)
+            runTests('Diff view ' + (state.options.diffView ? 'enabled' : 'disabled'))
+        },
+        setPrintDepth(value) {
+            state.options.objectPrintDepth = Number(value)
+            runTests('objectPrintDepth changed to ' + value)
+        }
     }
 }
 
 process.on('uncaughtException', error => {
-    printer.exception(error, state.runState)
+    state.printer.exception(error, state.runState)
     cleanUp()
 })
-
-function unvalidateFileList() {
-    state.testFileNamesValid = false
-}
 
 function runTests(triggerReason) {
     if (state.running) {
@@ -51,11 +68,11 @@ function runTests(triggerReason) {
     }
 
     if (!state.testFileNamesValid) {
-        state.testFileNames = globby.sync(state.settings.testFilesGlob)
+        state.testFileNames = globby.sync(state.options.testFilesGlob)
         state.testFileNamesValid = true
     }
 
-    printer.runStart(state.runNumber, triggerReason, state.settings.clearConsole)
+    state.printer.runStart(state.runNumber, triggerReason)
 
     runState.tape
         .createStream({ objectMode: true })
@@ -68,7 +85,7 @@ function runTests(triggerReason) {
             }
         })
         .on('end', () => {
-            printer.runEnd(runState.success, runState.failure, runState.timer())
+            state.printer.runEnd(runState.success, runState.failure, runState.timer())
             cleanUp()
         })
 
@@ -82,7 +99,7 @@ function handleAssert(item, runState) {
         runState.failure += 1
 
         const assert = streamMapper.assertMapper(__dirname, runState.testNames, item)
-        printer.failure(assert)
+        state.printer.failure(assert, state.diffView)
     }
 }
 
@@ -95,10 +112,10 @@ function handleTest(item, runState) {
     }
     runState.watchdogTimeoutId = setTimeout(
         () => {
-            printer.timedOut(runState.lastTest, state.settings.watchdogTimeout)
+            state.printer.timedOut(runState.lastTest, state.options.watchdogTimeout)
             cleanUp()
         },
-        state.settings.watchdogTimeout
+        state.options.watchdogTimeout
     )
 }
 
