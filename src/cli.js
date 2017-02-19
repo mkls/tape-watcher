@@ -7,18 +7,18 @@ const args = minimist(process.argv.slice(2))
 
 const options = {
     watchGlob: '.',
-    testFilesGlob: args._[0] || '**/*.spec.js',
+    testFilesGlob: args._[0] || 'src/*.spec.js',
     watchdogTimeout: 300,
 
     // printer options
-    clearConsole: false,
+    clearConsole: true,
     diffView: false,
     objectPrintDepth: 5,
     backgroundDiffColors: false,
     disableColors: false
 }
 
-const testRunner = require('./src/test-runner')(options)
+const testRunner = require('./test-runner')(options)
 
 /**
  * Setting up watcher

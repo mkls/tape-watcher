@@ -107,7 +107,8 @@ module.exports = (logger, options = {}) => {
 
         runStart(runNumber, triggerReason) {
             if (options.clearConsole) {
-                process.stdout.write('\033c')
+                process.stdout.write('\x1Bc')
+                // process.stdout.write('\033c')    // babel does not compile this, the douch
             }
             const time = new Date().toString().slice(16, 24)
             log('gray', `Run #${runNumber} triggered at ${time}, ${triggerReason}`)

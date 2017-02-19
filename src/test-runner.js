@@ -141,8 +141,8 @@ function cleanUp() {
 /**
  * Requiring package relative to project __dirname
  */
-function requireHere(package) {
-    return require(path.join(process.cwd(), 'node_modules', package))
+function requireHere(module) {
+    return require(path.join(process.cwd(), 'node_modules', module))
 }
 
 /*
