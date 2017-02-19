@@ -67,7 +67,7 @@ ${encodeValue(item.actual)}
 
 const exception = (error, runState) => {
     const location = runState ?
-        `at: '${runState.testNames.lastTest.join(' - ')}'` :
+        `at: '${runState.lastTest.join(' - ')}'` :
         ''
 
     const msg = `Uncaught exception ${location}`

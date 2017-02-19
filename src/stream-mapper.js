@@ -3,7 +3,7 @@ var failureLocation = require('./get-failure-location')
 module.exports = {
     nonDefaultAssertionName,
     assertMapper,
-    testNameMapper
+    getTestName
 }
 
 function assertMapper(dirname, testNames, assertion) {
@@ -23,13 +23,10 @@ function assertMapper(dirname, testNames, assertion) {
     }
 }
 
-function testNameMapper(test, testNames) {
-    const testName = typeof test.parent === 'number' ?
+function getTestName(test, testNames) {
+    return typeof test.parent === 'number' ?
         testNames[test.parent].concat(test.name) :
         [test.name]
-
-    testNames[test.id] = testNames['lastTest'] = testName
-    return testNames
 }
 
 /**

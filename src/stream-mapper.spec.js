@@ -1,6 +1,6 @@
 var test = require('tape')
 
-var streamConv = require('./stream-mapper')
+var streamMapper = require('./stream-mapper')
 
 test('assertMapper', t => {
     var input = {
@@ -38,7 +38,7 @@ test('assertMapper', t => {
     }
 
     t.deepEqual(
-        streamConv.assertMapper(dirname, testNames, input),
+        streamMapper.assertMapper(dirname, testNames, input),
         expected
     )
 
@@ -46,7 +46,7 @@ test('assertMapper', t => {
 })
 
 test('nonDefaultAssertionName', t => {
-    var getName = streamConv.nonDefaultAssertionName
+    var getName = streamMapper.nonDefaultAssertionName
 
     t.equal(
         getName('valami', 'unknown operator'),
@@ -79,14 +79,9 @@ test('test name mapper', t => {
             name: 'asdf'
         }
 
-        var expected = {
-            '0': ['asdf'],
-            'lastTest': ['asdf']
-        }
-
         t.deepEqual(
-            streamConv.testNameMapper(test, testNames),
-            expected
+            streamMapper.getTestName(test, testNames),
+            ['asdf']
         )
         t.end()
     })
@@ -102,15 +97,9 @@ test('test name mapper', t => {
             name: 'qwer'
         }
 
-        var expected = {
-            '0': ['asdf'],
-            '1': ['asdf', 'qwer'],
-            'lastTest': ['asdf', 'qwer']
-        }
-
         t.deepEqual(
-            streamConv.testNameMapper(test, testNames),
-            expected
+            streamMapper.getTestName(test, testNames),
+            ['asdf', 'qwer']
         )
         t.end()
     })
