@@ -33,6 +33,24 @@ watcher
 testRunner.runTests('Initial run')
 
 
+/**
+ * Handling keystroke commands (http://stackoverflow.com/a/12506613)
+ */
+process.stdin.setRawMode(true)
+process.stdin.resume()
+process.stdin.setEncoding('utf8')
+
+process.stdin.on('data', key => {
+    if (key === '\u0003' || key === 'q') {
+        process.exit()
+    }
+
+    if (key === 'r') {
+        testRunner.runTests('Manual trigger')
+    }
+})
+
+
 // for debugging many runs after each other
 // for (var i = 0; i < 1; i += 1) {
 //     setTimeout(function () {
