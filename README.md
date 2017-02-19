@@ -10,7 +10,7 @@ tape-watcher 'src/**.spec.js'
 "tdd": "tape-watcher src/**.spec.js"
 ```
 
-## Keystroke commands (something is wrong, commented out for now)
+## Keystroke commands (type the letter then press enter)
 * `r`: manually trigger the re-run of all the tests (not needed if watch is working well)
 * `1 to 9`: set objectPrintDepth
 * `q`: quit, exit process (same as hitting ctrl + c)
