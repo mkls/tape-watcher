@@ -1,6 +1,6 @@
 {
   "name": "tape-watcher",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Run tape tests after every modification and print a pretty output",
   "bin": "lib/cli.js",
   "scripts": {
