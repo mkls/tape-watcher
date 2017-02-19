@@ -2,7 +2,7 @@
   "name": "tape-watcher",
   "version": "0.0.1",
   "description": "Run tape tests after every modification and print a pretty output",
-  "main": "index.js",
+  "bin": "src/cli.js",
   "scripts": {
     "test": "tape src/*.spec.js | tap-min",
     "eslint": "eslint --fix ./src/"
@@ -32,9 +32,9 @@
     "diff": "^3.2.0",
     "globby": "^6.1.0",
     "hirestime": "^3.1.0",
+    "minimist": "^1.2.0",
     "object-inspect": "^1.2.1",
-    "pretty-ms": "^2.1.0",
-    "tape": "^4.6.0"
+    "pretty-ms": "^2.1.0"
   },
   "devDependencies": {
     "eslint": "^3.14.1",

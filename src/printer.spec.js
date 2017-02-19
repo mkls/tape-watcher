@@ -1,5 +1,6 @@
 const test = require('tape')
 
+const printerFactory = require('./printer')
 const logger = {
     value: null,
     log(value) {
@@ -7,7 +8,6 @@ const logger = {
     }
 }
 
-const printer = require('./printer')(logger, {disableColors: true})
 
 test('printer.failure simple values', t => {
     var assert = {
@@ -29,6 +29,7 @@ test('printer.failure simple values', t => {
         at: fixtures\\promise.spec.js:14:11
       ...`
 
+    const printer = printerFactory(logger, {disableColors: true})
     printer.failure(assert)
     t.deepEqual(logger.value, expected)
 
@@ -52,7 +53,8 @@ test('printer.failure diffView', t => {
         at: undefined
       ...`
 
-    printer.failure(assert, true)
+    const printer = printerFactory(logger, {disableColors: true, diffView: true})
+    printer.failure(assert)
     t.deepEqual(logger.value, expected)
 
     t.end()

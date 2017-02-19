@@ -1,13 +1,17 @@
+#!/usr/bin/env node
+
 const chokidar = require('chokidar')
+const minimist = require('minimist')
+
+const args = minimist(process.argv.slice(2))
 
 const options = {
     watchGlob: '.',
-    testFilesGlob: 'manua*/deep-eq*.spec.js',
-    // testFilesGlob: 'src/*.spec.js',
+    testFilesGlob: args._[0] || '**/*.spec.js',
     watchdogTimeout: 300,
 
     // printer options
-    clearConsole: true,
+    clearConsole: false,
     diffView: false,
     objectPrintDepth: 5,
     backgroundDiffColors: false,

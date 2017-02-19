@@ -64,7 +64,7 @@ function runTests(triggerReason) {
         lastTest: ['parsing test files'],
         testNames: {},
         watchdogTimeoutId: null,
-        tape: require('tape')
+        tape: requireHere('tape')
     }
 
     if (!state.testFileNamesValid) {
@@ -98,7 +98,7 @@ function handleAssert(item, runState) {
     } else {
         runState.failure += 1
 
-        const assert = streamMapper.assertMapper(__dirname, runState.testNames, item)
+        const assert = streamMapper.assertMapper(process.cwd(), runState.testNames, item)
         state.printer.failure(assert, state.diffView)
     }
 }
@@ -136,6 +136,13 @@ function cleanUp() {
 
     process.removeAllListeners('exit')
     state.running = false
+}
+
+/**
+ * Requiring package relative to project __dirname
+ */
+function requireHere(package) {
+    return require(path.join(process.cwd(), 'node_modules', package))
 }
 
 /*
