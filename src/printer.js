@@ -1,6 +1,7 @@
 const prettyms = require('pretty-ms')
-const inspect = require('object-inspect')
+const inspect = require('../dependencies/object-inspect-fork')
 const diff = require('diff')
+// const chalk = require('chalk')
 const chalkMain = require('chalk')
 
 const addPadding = padding => string => {
@@ -11,18 +12,17 @@ const addPadding = padding => string => {
 }
 
 /**
- * Options usd here:
- *   clearConsole = true: clears the console at the start of new runs
- *   disableColors = false: turns off chalk
- *   objectPrintDepth = 5: passed down to object-inspect
- *   backgroundDiffColors = false: print diffs with the background colored (shows whitespace diff)
- *
- *   TODOs
- *   indentValues = false: print objects indented
+ * Options used here:
+ *   clearConsole: clears the console at the start of new runs
+ *   disableColors: turns off chalk
+ *   subtleDiffColors: print diffs with colored letters instead of colored background (does not show whitespace diff)
+ *   objectPrintDepth: passed down to object-inspect
+ *   indent: print objects indented
+ *   diffView: prints the colored diff of actual and expected instead of the two values separately
  */
 module.exports = (logger, options = {}) => {
-    // chalk.enabled = !options.disableColors   // could be more effiecent, but annoying when developing
-    const chalk = new chalkMain.constructor({enabled: !options.disableColors})
+    // chalk.enabled = !options.disableColors   // more effiecent, but annoying when developing
+    const chalk = new chalkMain.constructor({enabled: !options.disableColors})  // god when testing
 
     const log = (color, text) => {
         const value = '\n' + addPadding('  ')(text)
@@ -35,13 +35,16 @@ module.exports = (logger, options = {}) => {
         if (typeof value === 'string') {
             return padder(value)
         } else {
-            return padder(inspect(value, {depth: options.objectPrintDepth || 5}))
+            return padder(inspect(value, {
+                depth: options.objectPrintDepth || 5,
+                indent: options.indent ? '  ' : undefined
+            }))
         }
     }
 
     const coloredDiff = (actual, expected) => {
-        const addedColor = options.backgroundDiffColors ? chalk.bgGreen : chalk.green
-        const removedColor = options.backgroundDiffColors ? chalk.bgRed : chalk.red
+        const addedColor = options.subtleDiffColors ? chalk.green : chalk.bgGreen
+        const removedColor = options.subtleDiffColors ? chalk.red : chalk.bgRed
 
         return diff.diffWordsWithSpace(
             encodeValue(expected),

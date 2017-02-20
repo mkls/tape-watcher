@@ -6,16 +6,17 @@ const minimist = require('minimist')
 const args = minimist(process.argv.slice(2))
 
 const options = {
-    watchGlob: '.',
+    watch: '.',
     testFilesGlob: args._[0] || 'src/*.spec.js',
     watchdogTimeout: 300,
 
     // printer options
     clearConsole: true,
-    diffView: false,
+    disableColors: false,
+    subtleDiffColors: false,
     objectPrintDepth: 5,
-    backgroundDiffColors: false,
-    disableColors: false
+    indent: false,
+    diffView: false
 }
 
 const testRunner = require('./test-runner')(options)
@@ -24,7 +25,7 @@ const testRunner = require('./test-runner')(options)
  * Setting up watcher
  */
 const watcher = chokidar.watch(
-    options.watchGlob,
+    options.watch,
     {
         ignored: /[\/\\]\.|node_modules|.git/,
         persistent: true,
@@ -64,6 +65,9 @@ process.stdin.on('data', chunk => {
     }
     if (key === 'r') {
         testRunner.runTests('Manual trigger')
+    }
+    if (key === 'i') {
+        testRunner.toggleIndentation()
     }
     if (key === 'd') {
         testRunner.toggleDiffView()

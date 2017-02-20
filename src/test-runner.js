@@ -31,6 +31,11 @@ module.exports = (options) => {
         unvalidateFileList() {
             state.testFileNamesValid = false
         },
+        toggleIndentation() {
+            state.options.indent = !state.options.indent
+            state.printer = printerFactory(logger, state.options)
+            runTests('Intentation for object prinint turned ' + (state.options.indent ? 'on' : 'off'))
+        },
         toggleDiffView() {
             state.options.diffView = !state.options.diffView
             state.printer = printerFactory(logger, state.options)
