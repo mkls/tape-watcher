@@ -21,12 +21,12 @@ test('printer.failure simple values', t => {
     var expected = normalizePadding`
     A - B
       ---
+        at: fixtures\\promise.spec.js:14:11
         operator: equal
         expected:
           2
         actual:
           1
-        at: fixtures\\promise.spec.js:14:11
       ...`
 
     const printer = printerFactory(logger, {disableColors: true})
@@ -47,10 +47,10 @@ test('printer.failure diffView', t => {
     var expected = normalizePadding`
     A - B
       ---
+        at: undefined
         operator: equal
         diff:
           21
-        at: undefined
       ...`
 
     const printer = printerFactory(logger, {disableColors: true, diffView: true})

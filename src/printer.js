@@ -77,12 +77,16 @@ module.exports = (logger, options = {}) => {
         failure(item) {
             const middle = options.diffView ? diffPart : actualAndExpected
 
+            const top = [
+                item.name.join(' - '),
+                '  ---',
+                '    at: ' + item.at,
+                '    operator: ' + item.operator,
+            ].join('\n')
+
             const output = [
-                chalk.gray(item.name.join(' - ')),
-                chalk.gray('  ---'),
-                chalk.gray('    operator: ' + item.operator),
+                chalk.gray(top),
                 middle(item),
-                chalk.gray('    at: ' + item.at),
                 chalk.gray('  ...')
             ].join('\n')
 
