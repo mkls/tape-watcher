@@ -13,7 +13,7 @@ const options = {
     // printer options
     clearConsole: true,
     disableColors: false,
-    subtleDiffColors: false,
+    inverseDiffColors: false,
     objectPrintDepth: 5,
     indent: false,
     diffView: false

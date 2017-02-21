@@ -15,7 +15,7 @@ const addPadding = padding => string => {
  * Options used here:
  *   clearConsole: clears the console at the start of new runs
  *   disableColors: turns off chalk
- *   subtleDiffColors: print diffs with colored letters instead of colored background (does not show whitespace diff)
+ *   inverseDiffColors: print diffs with colored letters instead of colored background (does not show whitespace diff)
  *   objectPrintDepth: passed down to object-inspect
  *   indent: print objects indented
  *   diffView: prints the colored diff of actual and expected instead of the two values separately
@@ -43,8 +43,8 @@ module.exports = (logger, options = {}) => {
     }
 
     const coloredDiff = (actual, expected) => {
-        const addedColor = options.subtleDiffColors ? chalk.green : chalk.bgGreen
-        const removedColor = options.subtleDiffColors ? chalk.red : chalk.bgRed
+        const addedColor = options.inverseDiffColors ? chalk.green : chalk.black.bgGreen
+        const removedColor = options.inverseDiffColors ? chalk.red : chalk.black.bgRed
 
         return diff.diffWordsWithSpace(
             encodeValue(expected),

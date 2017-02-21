@@ -1,7 +1,7 @@
 {
   "name": "tape-watcher",
   "version": "0.0.4",
-  "description": "Run tape tests after every modification and print a pretty output",
+  "description": "Run tape tests when files change and prints a pretty output",
   "bin": "lib/cli.js",
   "scripts": {
     "test": "tape src/*.spec.js",
