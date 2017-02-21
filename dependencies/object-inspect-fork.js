@@ -36,24 +36,23 @@ module.exports = function inspect_ (obj, opts, depth, seen) {
     if (depth >= maxDepth && maxDepth > 0 && typeof obj === 'object') {
         return '[Object]';
     }
-
+    
+    var indent = getIndent(opts, depth);
+    
     if (typeof seen === 'undefined') seen = [];
     else if (indexOf(seen, obj) >= 0) {
         return '[Circular]';
     }
     
-    function inspect (value, from) {
+    function inspect (value, from, noIndent) {
         if (from) {
             seen = seen.slice();
             seen.push(from);
         }
+        if (noIndent) {
+            return inspect_(value, null, depth + 1, seen);
+        }
         return inspect_(value, opts, depth + 1, seen);
-    }
-
-    function indentedJoin(xs) {
-        var previousDepthIndent = Array(depth + 1).join(opts.indent)
-        var lineJoiner = '\n' + previousDepthIndent + opts.indent
-        return lineJoiner + xs.join(',' + lineJoiner) + '\n' + previousDepthIndent;
     }
 
     if (typeof obj === 'function') {
@@ -81,8 +80,8 @@ module.exports = function inspect_ (obj, opts, depth, seen) {
         for (var i = 0; i < obj.length; i++) {
             xs[i] = has(obj, i) ? inspect(obj[i], obj) : '';
         }
-        if (opts.indent && !singleLineValues(xs)) {
-            return '[' + indentedJoin(xs) + ']';
+        if (indent && !singleLineValues(xs)) {
+            return '[' + indentedJoin(xs, indent) + ']';
         } else {
             return '[ ' + xs.join(', ') + ' ]';
         }
@@ -108,16 +107,16 @@ module.exports = function inspect_ (obj, opts, depth, seen) {
     if (isMap(obj)) {
         var parts = [];
         mapForEach.call(obj, function (value, key) {
-            parts.push(inspect(key, obj) + ' => ' + inspect(value, obj));
+            parts.push(inspect(key, obj, true) + ' => ' + inspect(value, obj));
         });
-        return collectionOf('Map', mapSize.call(obj), parts);
+        return collectionOf('Map', mapSize.call(obj), parts, indent);
     }
     if (isSet(obj)) {
         var parts = [];
         setForEach.call(obj, function (value ) {
             parts.push(inspect(value, obj));
         });
-        return collectionOf('Set', setSize.call(obj), parts);
+        return collectionOf('Set', setSize.call(obj), parts, indent);
     }
     if (isNumber(obj)) {
         return markBoxed(Number(obj));
@@ -141,8 +140,8 @@ module.exports = function inspect_ (obj, opts, depth, seen) {
         }
         if (xs.length === 0) return '{}';
 
-        if (opts.indent) {
-            return '{' + indentedJoin(xs) + '}';
+        if (indent) {
+            return '{' + indentedJoin(xs, indent) + '}';
         } else {
             return '{ ' + xs.join(', ') + ' }';
         }
@@ -228,7 +227,7 @@ function isElement (x) {
 
 function inspectString (str) {
     var s = str.replace(/(['\\])/g, '\\$1').replace(/[\x00-\x1f]/g, lowbyte);
-    return "'" + s + "'";
+    return "'" + s + "'"; 
 }
 
 function lowbyte (c) {
@@ -242,8 +241,9 @@ function markBoxed (str) {
     return 'Object(' + str + ')';
 }
 
-function collectionOf(type, size, entries) {
-    return type + ' (' + size + ') {' + entries.join(', ') + '}';
+function collectionOf(type, size, entries, indent) {
+    var joinedEntries = indent ? indentedJoin(entries, indent) : entries.join(', ');
+    return type + ' (' + size + ') {' + joinedEntries + '}';
 }
 
 function singleLineValues(xs) {
@@ -253,4 +253,25 @@ function singleLineValues(xs) {
         }
     }
     return true;
+}
+
+function getIndent(opts, depth) {
+    var baseIndent;
+    if (opts.indent === '\t') {
+        baseIndent = '\t';
+    } else if (typeof opts.indent === 'number' && opts.indent > 0) {
+        baseIndent = Array(opts.indent + 1).join(' ');
+    } else {
+        return null;
+    }
+    return {
+        base: baseIndent,
+        prev: Array(depth + 1).join(baseIndent)
+    };
+}
+
+function indentedJoin(xs, indent) {
+    if (xs.length === 0) return '';
+    var lineJoiner = '\n' + indent.prev + indent.base;
+    return lineJoiner + xs.join(',' + lineJoiner) + '\n' + indent.prev;
 }
