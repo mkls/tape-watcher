@@ -37,7 +37,7 @@ module.exports = (logger, options = {}) => {
         } else {
             return padder(inspect(value, {
                 depth: options.objectPrintDepth || 5,
-                indent: options.indent ? '  ' : undefined
+                indent: options.indent ? 2 : undefined
             }))
         }
     }
