@@ -35,10 +35,15 @@ module.exports = (logger, options = {}) => {
         if (typeof value === 'string') {
             return padder(value)
         } else {
-            return padder(inspect(value, {
+            const inspectOptions = {
                 depth: options.objectPrintDepth || 5,
                 indent: options.indent ? 2 : undefined
-            }))
+            }
+            let inspectResult = inspect(value, inspectOptions)
+            if (typeof inspectResult !== 'string') {
+                inspectResult = inspect(inspectResult, inspectOptions)
+            }
+            return padder(inspectResult)
         }
     }
 

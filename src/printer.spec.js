@@ -92,6 +92,45 @@ test('printer.failure indented view', t => {
     t.end()
 })
 
+test('printer.failure object has inspect method defined', t => {
+    var assert = {
+        name: ['A', 'B'],
+        operator: 'equal',
+        actual: {
+            inspect() {
+                return {
+                    a: 1,
+                    b: 2
+                }
+            }
+        },
+        expected: {a: 1, b: 'hap'}
+    }
+
+    var expected = normalizePadding`
+    A - B
+      ---
+        at: undefined
+        operator: equal
+        expected:
+          {
+            a: 1,
+            b: 'hap'
+          }
+        actual:
+          {
+            a: 1,
+            b: 2
+          }
+      ...`
+
+    const printer = printerFactory(logger, {disableColors: true, indent: true})
+    printer.failure(assert)
+    t.deepEqual(logger.value, expected)
+
+    t.end()
+})
+
 function normalizePadding(string) {
     const lines = string[0].split('\n')
     const padLength = /^ +/.exec(lines[1])[0].length - 2
